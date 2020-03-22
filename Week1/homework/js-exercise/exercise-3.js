@@ -1,7 +1,7 @@
 const xhr = new XMLHttpRequest();
 
 const fetchURL = 'https://dog.ceo/api/breeds/image/random';
-const rootDiv = document.getElementById('root');
+const rootUl = document.getElementById('root');
 
 function createAndAppend(element, append, text) {
   const newElement = document.createElement(element);
@@ -14,9 +14,12 @@ function fetchXhr() {
   xhr.responseType = 'json';
   // eslint-disable-next-line consistent-return
   xhr.onload = () => {
-    let dogList = '';
-    dogList += `<li><img width=100px src="${xhr.response.message}"/></li>`;
-    createAndAppend('ul', rootDiv, dogList);
+    if (xhr.status === 200 && xhr.readyState === 4) {
+      const dogList = `<img width=100px src="${xhr.response.message}"/>`;
+      createAndAppend('li', rootUl, dogList);
+    } else {
+      console.log(`Network error: ${xhr.status}`);
+    }
   };
   xhr.send();
 }
@@ -25,14 +28,13 @@ function fetchAxios() {
   axios
     .get(fetchURL)
     .then(response => {
-      let dogList = '';
-      dogList += `<li><img width=100px src="${response.data.message}"/></li>`;
-      createAndAppend('ul', rootDiv, dogList);
+      const dogList = `<img width=100px src="${xhr.response.message}"/>`;
+      createAndAppend('li', rootUl, dogList);
     })
     .catch(error => {
       console.log(error);
     });
 }
 
-document.getElementById('button1').addEventListener('click', fetchXhr);
-document.getElementById('button2').addEventListener('click', fetchAxios);
+document.getElementById('buttonXhr').addEventListener('click', fetchXhr);
+document.getElementById('buttonAxios').addEventListener('click', fetchAxios);

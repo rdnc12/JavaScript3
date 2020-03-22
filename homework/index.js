@@ -7,12 +7,7 @@
     xhr.responseType = 'json';
     xhr.onload = () => {
       if (xhr.status >= 200 && xhr.status <= 299) {
-        cb(
-          null,
-          xhr.response.sort((current, next) =>
-            current.name.localeCompare(next.name),
-          ),
-        );
+        cb(null, xhr.response);
       } else {
         cb(new Error(` Network error: ${xhr.status} - ${xhr.statusText}`));
       }
@@ -66,18 +61,21 @@
         });
         return;
       }
-
-      repos.forEach((repo, index) => {
-        const ul = createAndAppend('ul', root, {
-          id: `ulList_${index}`,
-          class: 'Card',
+      repos
+        .sort((current, next) => current.name.localeCompare(next.name))
+        .forEach((repo, index) => {
+          if (index < 10) {
+            const ul = createAndAppend('ul', root, {
+              id: `ulList_${index}`,
+              class: 'Card',
+            });
+            renderRepoDetails(repo, ul);
+          }
         });
-        renderRepoDetails(repo, ul);
-      });
     });
   }
 
   const HYF_REPOS_URL =
-    'https://api.github.com/orgs/HackYourFuture/repos?per_page=10';
+    'https://api.github.com/orgs/HackYourFuture/repos?per_page=100';
   window.onload = () => main(HYF_REPOS_URL);
 }
