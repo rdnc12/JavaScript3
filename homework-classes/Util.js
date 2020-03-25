@@ -13,7 +13,9 @@
       const elem = document.createElement(name);
       parent.appendChild(elem);
       Object.entries(options).forEach(([key, value]) => {
-        if (key === 'text') {
+        if (key === 'innerHTML') {
+          elem.innerHTML = value;
+        } else if (key === 'text') {
           elem.textContent = value;
         } else {
           elem.setAttribute(key, value);
