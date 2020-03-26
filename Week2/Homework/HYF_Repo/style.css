@@ -3,6 +3,11 @@ body {
   font-family: 'Montserrat', sans-serif;
   background-color: #f4eeff;
 }
+h5.title {
+  margin-top: 3px;
+  margin-bottom: 0;
+  font-size: 15px;
+}
 .CardHeader {
   background-color: #424874;
   color: white;
@@ -48,7 +53,16 @@ body {
   border-radius: 4px;
   list-style-type: none;
 }
-
+.repoContributors li {
+  display: flex;
+  text-align: center;
+  justify-content: space-between;
+  border-bottom: 2px solid #687466;
+}
+.repoContributors li a {
+  margin: 20px auto 0 5px;
+  text-decoration: none;
+}
 .repo-container {
   width: 100%;
   margin-left: 15px;
