@@ -23,7 +23,7 @@ const errorHandler = err => {
   });
 };
 
-const optionLoading = items => {
+const renderSelectOptions = items => {
   const selectEl = document.querySelector('#reposName');
   items
     .sort((current, next) => current.name.localeCompare(next.name))
@@ -41,21 +41,50 @@ const renderRepoContainer = repo => {
     repo[selectedIndex].updated_at,
   ).toLocaleString();
   const repoContainer = document.querySelector('.repo-container');
+  createAndAppend('h5', repoContainer, {
+    text: 'Repository',
+    class: 'title',
+  });
 
-  createAndAppend('ul', repoContainer, { class: 'repoDetails' });
-  const cardUl = document.querySelector('.repoDetails');
+  const cardUl = createAndAppend('ul', repoContainer, { class: 'repoDetails' });
 
-  createAndAppend('li', cardUl, {
-    innerHTML: `<span class='firstText'>Repository</span> <span>:</span><a href="${repo[selectedIndex].html_url}" target='_blank'>${repo[selectedIndex].name}</a>`,
+  const liRepo = createAndAppend('li', cardUl);
+  createAndAppend('span', liRepo, { class: 'firstText', text: 'Repository' });
+  createAndAppend('span', liRepo, { text: ':' });
+  createAndAppend('a', liRepo, {
+    href: repo[selectedIndex].html_url,
+    target: '_blank',
+    text: repo[selectedIndex].name,
   });
-  createAndAppend('li', cardUl, {
-    innerHTML: `<span class='firstText'>Description</span><span>:</span> <span >${repo[selectedIndex].description}</span>`,
+
+  const liDescription = createAndAppend('li', cardUl);
+  createAndAppend('span', liDescription, {
+    class: 'firstText',
+    text: 'Description',
   });
-  createAndAppend('li', cardUl, {
-    innerHTML: `<span class='firstText'>Forks</span><span>:</span> <span >${repo[selectedIndex].forks_count}</span>`,
+  createAndAppend('span', liDescription, { text: ':' });
+  createAndAppend('span', liDescription, {
+    text: repo[selectedIndex].description,
   });
-  createAndAppend('li', cardUl, {
-    innerHTML: `<span class='firstText'>Updated</span><span>:</span> <span >${convertedDate}</span>`,
+
+  const liForks = createAndAppend('li', cardUl);
+  createAndAppend('span', liForks, {
+    class: 'firstText',
+    text: 'Forks',
+  });
+  createAndAppend('span', liForks, { text: ':' });
+  createAndAppend('span', liForks, {
+    text: repo[selectedIndex].forks_count,
+  });
+
+  const liUpdated = createAndAppend('li', cardUl);
+  createAndAppend('span', liUpdated, {
+    class: 'firstText',
+    text: 'Updated',
+  });
+  createAndAppend('span', liUpdated, { text: ':' });
+  createAndAppend('span', liUpdated, {
+    text: convertedDate,
   });
 
   return repo;
@@ -66,32 +95,29 @@ const renderRepoContributors = repo => {
   const selectedRepo = repo[selectedIndex];
 
   const repoContributors = document.querySelector('.contributors-container');
-  createAndAppend('ul', repoContributors, { class: 'repoContributors' });
-  const ulContributors = document.querySelector('.repoContributors');
-
-  createAndAppend('h5', ulContributors, {
+  createAndAppend('h5', repoContributors, {
     text: 'Contributions',
-    style: 'margin:0 0 5px 0; font-size: 15px; ',
+    class: 'title',
+  });
+  const ulContributors = createAndAppend('ul', repoContributors, {
+    class: 'repoContributors',
   });
 
   fetchJSON(selectedRepo.contributors_url)
     .then(data =>
       data.forEach(dataSelected => {
-        const li = createAndAppend('li', ulContributors, {
-          style:
-            'display: flex;text-align: center;  justify-content: space-between; border-bottom: 2px solid #687466;',
-        });
-        const imgAvatar = createAndAppend('img', li, {
+        const li = createAndAppend('li', ulContributors);
+        createAndAppend('img', li, {
           src: dataSelected.avatar_url,
           class: 'avatar',
+          alt: 'Git image',
         });
-        const contInfo = createAndAppend('a', li, {
+        createAndAppend('a', li, {
           text: dataSelected.login,
           href: dataSelected.html_url,
           target: '_blank',
-          style: 'margin: 20px auto 0 5px; text-decoration: none;',
         });
-        const contCount = createAndAppend('span', li, {
+        createAndAppend('span', li, {
           text: dataSelected.contributions,
           class: 'contributions-count',
         });
@@ -105,6 +131,7 @@ const renderSelectedOptionChange = repo => {
   selectRepo.addEventListener('change', () => {
     document.querySelector('section.repo-container ul').remove();
     document.querySelector('.repoContributors').remove();
+    document.querySelectorAll('h5').forEach(item => item.remove());
 
     renderRepoContainer(repo);
     renderRepoContributors(repo);
@@ -119,15 +146,14 @@ const fetchJSON = url => {
       }
       return res.json();
     })
-    .then(data => data)
-    .catch(err => errorHandler(err));
+    .catch(errorHandler);
   return repos;
 };
 
 const main = url => {
   fetchJSON(url)
     .then(data => {
-      optionLoading(data);
+      renderSelectOptions(data);
       renderRepoContainer(data);
       renderRepoContributors(data);
       renderSelectedOptionChange(data);
