@@ -132,7 +132,7 @@ const main = url => {
       renderRepoContributors(data);
       renderSelectedOptionChange(data);
     })
-    .catch(err => errorHandler(err));
+    .catch(errorHandler);
 };
 
 const HYF_REPOS_URL =
