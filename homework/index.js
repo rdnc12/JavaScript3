@@ -1,81 +1,193 @@
-'use strict';
+/* eslint-disable no-console */
+/* eslint-disable no-use-before-define */
+/* eslint-disable no-unused-vars */
 
-{
-  function fetchJSON(url, cb) {
-    const xhr = new XMLHttpRequest();
-    xhr.open('GET', url);
-    xhr.responseType = 'json';
-    xhr.onload = () => {
-      if (xhr.status >= 200 && xhr.status <= 299) {
-        cb(null, xhr.response);
-      } else {
-        cb(new Error(` Network error: ${xhr.status} - ${xhr.statusText}`));
-      }
-    };
-    xhr.onerror = () => cb(new Error('Network request failed'));
-    xhr.send();
-  }
+const createAndAppend = (name, parent, options = {}) => {
+  const elem = document.createElement(name);
+  parent.appendChild(elem);
+  Object.entries(options).forEach(([key, value]) => {
+    if (key === 'innerHTML') {
+      elem.innerHTML = value;
+    } else if (key === 'text') {
+      elem.textContent = value;
+    } else {
+      elem.setAttribute(key, value);
+    }
+  });
+  return elem;
+};
 
-  function createAndAppend(name, parent, options = {}) {
-    const elem = document.createElement(name);
-    parent.appendChild(elem);
-    Object.entries(options).forEach(([key, value]) => {
-      if (key === 'innerHTML') {
-        elem.innerHTML = value;
-      } else if (key === 'text') {
-        elem.textContent = value;
-      } else {
-        elem.setAttribute(key, value);
-      }
-    });
-    return elem;
-  }
+const errorHandler = err => {
+  const root = document.getElementById('root');
+  createAndAppend('div', root, {
+    text: err.message,
+    class: 'alert-error',
+  });
+};
 
-  function renderRepoDetails(repo, ul) {
-    const convertedDate = new Date(repo.updated_at).toLocaleString();
-    createAndAppend('li', ul, {
-      innerHTML: `<span class='firstText'>Repository</span> <span>:</span><a href="${repo.html_url}">${repo.name}</a>`,
-    });
-    createAndAppend('li', ul, {
-      innerHTML: `<span class='firstText'>Description</span><span>:</span> <span >${repo.description}</span>`,
-    });
-    createAndAppend('li', ul, {
-      innerHTML: `<span class='firstText'>Forks</span><span>:</span> <span >${repo.forks_count}</span>`,
-    });
-    createAndAppend('li', ul, {
-      innerHTML: `<span class='firstText'>Updated</span><span>:</span> <span >${convertedDate}</span>`,
-    });
-  }
-
-  function main(url) {
-    fetchJSON(url, (err, repos) => {
-      const root = document.getElementById('root');
-      createAndAppend('p', root, {
-        text: 'HYF Repositories',
-        class: 'CardHeader',
+const renderSelectOptions = items => {
+  const selectEl = document.querySelector('#reposName');
+  items
+    .sort((current, next) => current.name.localeCompare(next.name))
+    .forEach(repo => {
+      createAndAppend('option', selectEl, {
+        text: repo.name,
+        value: repo.name,
       });
-      if (err) {
-        createAndAppend('div', root, {
-          text: err.message,
-          class: 'alert-error',
-        });
-        return;
-      }
-      repos
-        .sort((current, next) => current.name.localeCompare(next.name))
-        .forEach((repo, index) => {
-          if (index < 10) {
-            const ul = createAndAppend('ul', root, {
-              id: `ulList_${index}`,
-              class: 'Card',
-            });
-            renderRepoDetails(repo, ul);
-          }
-        });
     });
-  }
+};
 
-  const HYF_REPOS_URL =
-    'https://api.github.com/orgs/HackYourFuture/repos?per_page=100';
-  window.onload = () => main(HYF_REPOS_URL);
-}
+const renderRepoContainer = repo => {
+  const { selectedIndex } = document.querySelector('select');
+  const convertedDate = new Date(
+    repo[selectedIndex].updated_at,
+  ).toLocaleString();
+  const repoContainer = document.querySelector('.repo-container');
+
+  createAndAppend('h5', repoContainer, {
+    text: 'Repository',
+    class: 'title',
+  });
+
+  const cardUl = createAndAppend('ul', repoContainer, { class: 'repoDetails' });
+
+  const liRepo = createAndAppend('li', cardUl);
+  createAndAppend('span', liRepo, { class: 'firstText', text: 'Repository' });
+  createAndAppend('span', liRepo, { text: ':' });
+  createAndAppend('a', liRepo, {
+    href: repo[selectedIndex].html_url,
+    target: '_blank',
+    text: repo[selectedIndex].name,
+  });
+
+  const liDescription = createAndAppend('li', cardUl);
+  createAndAppend('span', liDescription, {
+    class: 'firstText',
+    text: 'Description',
+  });
+  createAndAppend('span', liDescription, { text: ':' });
+  createAndAppend('span', liDescription, {
+    text: repo[selectedIndex].description,
+  });
+
+  const liForks = createAndAppend('li', cardUl);
+  createAndAppend('span', liForks, {
+    class: 'firstText',
+    text: 'Forks',
+  });
+  createAndAppend('span', liForks, { text: ':' });
+  createAndAppend('span', liForks, {
+    text: repo[selectedIndex].forks_count,
+  });
+
+  const liUpdated = createAndAppend('li', cardUl);
+  createAndAppend('span', liUpdated, {
+    class: 'firstText',
+    text: 'Updated',
+  });
+  createAndAppend('span', liUpdated, { text: ':' });
+  createAndAppend('span', liUpdated, {
+    text: convertedDate,
+  });
+
+  return repo;
+};
+
+const renderRepoContributors = async repo => {
+  const { selectedIndex } = document.querySelector('select');
+  const selectedRepo = repo[selectedIndex];
+
+  const repoContributors = document.querySelector('.contributors-container');
+  createAndAppend('h5', repoContributors, {
+    text: 'Contributions',
+    class: 'title',
+  });
+  const ulContributors = createAndAppend('ul', repoContributors, {
+    class: 'repoContributors',
+  });
+
+  try {
+    const contData = await fetchJSON(selectedRepo.contributors_url);
+    if (contData.length !== 0) {
+      contData.forEach(dataSelected => {
+        const li = createAndAppend('li', ulContributors);
+        createAndAppend('img', li, {
+          src: dataSelected.avatar_url,
+          class: 'avatar',
+          alt: 'Git image',
+        });
+        createAndAppend('a', li, {
+          text: dataSelected.login,
+          href: dataSelected.html_url,
+          target: '_blank',
+        });
+        createAndAppend('span', li, {
+          text: dataSelected.contributions,
+          class: 'contributions-count',
+        });
+      });
+    } else {
+      createAndAppend('li', ulContributors, {
+        text: 'No contributors for this repository.',
+      });
+    }
+  } catch (error) {
+    errorHandler(error);
+  }
+};
+
+const renderSelectedOptionChange = repo => {
+  const selectRepo = document.querySelector('select');
+  selectRepo.addEventListener('change', () => {
+    document.querySelector('section.repo-container ul').remove();
+    document.querySelector('.repoContributors').remove();
+    document.querySelectorAll('h5').forEach(item => item.remove());
+
+    renderRepoContainer(repo);
+    renderRepoContributors(repo);
+  });
+};
+
+const fetchJSON = async url => {
+  try {
+    const repos = await axios.get(url);
+    const response = await repos.data;
+    console.log(response);
+    if (!repos.statusText) {
+      throw new Error(`Error: ${repos.status},${repos.statusText}`);
+    }
+    return response;
+  } catch (error) {
+    errorHandler(error);
+  }
+};
+
+const spinner = () => {
+  const root = document.querySelector('#root');
+  const loading = createAndAppend('div', root, {
+    class: 'loader',
+  });
+  setTimeout(() => {
+    loading.remove();
+  }, 2000);
+};
+
+const main = async url => {
+  try {
+    spinner();
+    setTimeout(async () => {
+      const mainData = await fetchJSON(url);
+      renderSelectOptions(mainData);
+      renderRepoContainer(mainData);
+      renderRepoContributors(mainData);
+      renderSelectedOptionChange(mainData);
+    }, 2000);
+  } catch (error) {
+    errorHandler(error);
+  }
+};
+
+const HYF_REPOS_URL =
+  'https://api.github.com/orgs/HackYourFuture/repos?per_page=100';
+
+main(HYF_REPOS_URL);

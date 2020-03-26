@@ -20,33 +20,54 @@
      */
     render(repo) {
       // TODO: replace this comment and the console.log with your own code
-      this.renderRepoContainer(repo);
-    }
+      this.container.textContent = '';
+      const convertedDate = new Date(repo.updated_at).toLocaleString();
 
-    renderRepoContainer(repo) {
-      const { selectedIndex } = document.querySelector('select');
-      const convertedDate = new Date(
-        repo[selectedIndex].updated_at,
-      ).toLocaleString();
-      const repoContainer = document.querySelector('.repo-container');
-      this.container = repoContainer;
-      createAndAppend('ul', repoContainer, { class: 'repoDetails' });
-      const cardUl = document.querySelector('.repoDetails');
-
-      createAndAppend('li', cardUl, {
-        innerHTML: `<span class='firstText'>Repository</span> <span>:</span><a href="${repo[selectedIndex].html_url}" target='_blank'>${repo[selectedIndex].name}</a>`,
-      });
-      createAndAppend('li', cardUl, {
-        innerHTML: `<span class='firstText'>Description</span><span>:</span> <span >${repo[selectedIndex].description}</span>`,
-      });
-      createAndAppend('li', cardUl, {
-        innerHTML: `<span class='firstText'>Forks</span><span>:</span> <span >${repo[selectedIndex].forks_count}</span>`,
-      });
-      createAndAppend('li', cardUl, {
-        innerHTML: `<span class='firstText'>Updated</span><span>:</span> <span >${convertedDate}</span>`,
+      const cardUl = createAndAppend('ul', this.container, {
+        class: 'repoDetails',
       });
 
-      return repo;
+      const liRepo = createAndAppend('li', cardUl);
+      createAndAppend('span', liRepo, {
+        class: 'firstText',
+        text: 'Repository',
+      });
+      createAndAppend('span', liRepo, { text: ':' });
+      createAndAppend('a', liRepo, {
+        href: repo.html_url,
+        target: '_blank',
+        text: repo.name,
+      });
+
+      const liDescription = createAndAppend('li', cardUl);
+      createAndAppend('span', liDescription, {
+        class: 'firstText',
+        text: 'Description',
+      });
+      createAndAppend('span', liDescription, { text: ':' });
+      createAndAppend('span', liDescription, {
+        text: repo.description,
+      });
+
+      const liForks = createAndAppend('li', cardUl);
+      createAndAppend('span', liForks, {
+        class: 'firstText',
+        text: 'Forks',
+      });
+      createAndAppend('span', liForks, { text: ':' });
+      createAndAppend('span', liForks, {
+        text: repo.forks_count,
+      });
+
+      const liUpdated = createAndAppend('li', cardUl);
+      createAndAppend('span', liUpdated, {
+        class: 'firstText',
+        text: 'Updated',
+      });
+      createAndAppend('span', liUpdated, { text: ':' });
+      createAndAppend('span', liUpdated, {
+        text: convertedDate,
+      });
     }
   }
 

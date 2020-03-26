@@ -42,10 +42,10 @@
         class: 'main-container',
       });
       const repo = createAndAppend('section', main, {
-        class: 'repo-container whiteframe',
+        class: 'repo-container',
       });
       const contributors = createAndAppend('section', main, {
-        class: 'contributors-container whiteframe',
+        class: 'contributors-container',
       });
       return { header, error, main, repo, contributors };
     }

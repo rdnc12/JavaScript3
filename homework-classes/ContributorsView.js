@@ -20,9 +20,34 @@
      */
     render(contributors) {
       // TODO: replace this comment and the console.log with your own code
-      console.log('ContributorsView', contributors);
+      this.container.innerHTML = '';
+      const ulContributors = createAndAppend('ul', this.container, {
+        class: 'repoContributors',
+      });
+      if (contributors) {
+        contributors.forEach(dataSelected => {
+          const li = createAndAppend('li', ulContributors);
+          createAndAppend('img', li, {
+            src: dataSelected.avatar_url,
+            class: 'avatar',
+            alt: 'Git image',
+          });
+          createAndAppend('a', li, {
+            text: dataSelected.login,
+            href: dataSelected.html_url,
+            target: '_blank',
+          });
+          createAndAppend('span', li, {
+            text: dataSelected.contributions,
+            class: 'contributions-count',
+          });
+        });
+      } else {
+        createAndAppend('li', ulContributors, {
+          text: 'No contributors for this repository.',
+        });
+      }
     }
   }
-
   window.ContributorsView = ContributorsView;
 }
